@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Team Ranker</title>
+  <script src="/socket.io/socket.io.js"></script>
+  <style>
+    .input-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    #newItem {
+      width: 200px;
+      padding: 5px;
+    }
+    #newNumber {
+      width: 60px;
+      padding: 5px;
+    }
+    .team-container {
+      display: inline-block;
+      vertical-align: top;
+      margin-right: 40px;
+    }
+    .ranking-list {
+      list-style: none;
+      padding: 0;
+    }
+    .rank-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px;
+      border: 1px solid #ddd;
+      margin-bottom: 4px;
+      border-radius: 4px;
+      cursor: grab;
+    }
+    .rank-item:hover {
+      background: #f9f9f9;
+    }
+    .rank-number {
+      font-weight: bold;
+      color: #555;
+      width: 20px;
+      text-align: right;
+    }
+  </style>
+</head>
+<body>
+  <h1>Team Ranker</h1>
+
+  <div class="input-row">
+    <input id="newItem" placeholder="New item..." />
+    <input id="newNumber" type="number" placeholder="#" step="any" />
+    <button onclick="addItem()">Add Item</button>
+  </div>
+
+  <div id="lists"></div>
+
+  <hr>
+  <h3>Export</h3>
+  <a href="/export/json">JSON</a> |
+  <a href="/export/excel">Excel</a> |
+  <a href="/export/csv">CSV</a>
+
+  <h3>Import</h3>
+  <form id="importForm" enctype="multipart/form-data">
+    <input type="file" id="importFile" name="file" accept=".json,.csv,.xlsx" />
+    <label>
+      <input type="checkbox" id="mergeCheckbox" /> Merge instead of replace
+    </label>
+    <button type="submit">Import File</button>
+  </form>
+
+  <script src="script.js"></script>
+</body>
+</html>
