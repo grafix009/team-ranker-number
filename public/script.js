@@ -133,6 +133,7 @@ function addItem() {
 function addTeam() {
   const teamName = prompt("Enter new team name:");
   if (teamName !== null && teamName.trim() !== "") {
+    console.log("Emitting addTeam:", teamName.trim()); // Debug log
     socket.emit("addTeam", { name: teamName.trim() });
   }
 }
