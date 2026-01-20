@@ -109,6 +109,7 @@ io.on('connection', (socket) => {
     delete teams[team];
     io.emit('updateData', teams);
     console.log(`Team "${team}" deleted`);
+    
   });
 });
 
