@@ -150,6 +150,9 @@ function addTeam() {
   }
 }
 
+// Attach event listeners
+document.getElementById("addTeamBtn").addEventListener("click", addTeam);
+
 document.getElementById("importForm").onsubmit = async (e) => {
   e.preventDefault();
   const file = document.getElementById("importFile").files[0];
