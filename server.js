@@ -60,10 +60,19 @@ io.on('connection', (socket) => {
       return;
     }
     
-    // Create new team with empty array
-    teams[teamName] = [];
+    // Get existing items from any existing team to populate the new team
+    let existingItems = [];
+    const existingTeams = Object.keys(teams);
+    
+    if (existingTeams.length > 0) {
+      // Copy items from the first team (they should all have the same items)
+      existingItems = teams[existingTeams[0]].map(item => ({ ...item }));
+    }
+    
+    // Create new team with copies of existing items
+    teams[teamName] = existingItems;
     io.emit('updateData', teams);
-    console.log(`Team "${teamName}" created`);
+    console.log(`Team "${teamName}" created with ${existingItems.length} existing items`);
   });
 
   // NEW: Rename an existing team
@@ -109,7 +118,6 @@ io.on('connection', (socket) => {
     delete teams[team];
     io.emit('updateData', teams);
     console.log(`Team "${team}" deleted`);
-    
   });
 });
 

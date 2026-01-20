@@ -70,10 +70,19 @@
     
     .add-team-btn {
       background-color: #2196F3;
+      margin-right: 8px;
     }
     
     .add-team-btn:hover {
       background-color: #0b7dda;
+    }
+    
+    .export-btn {
+      background-color: #FF9800;
+    }
+    
+    .export-btn:hover {
+      background-color: #e68900;
     }
     
     #lists {
@@ -166,6 +175,7 @@
     <div class="control-section">
       <h3>Team Management</h3>
       <button class="add-team-btn" id="addTeamBtn">➕ Add New Team</button>
+      <button class="export-btn" id="exportBtn">📥 Export to CSV</button>
       <p style="margin: 8px 0 0 0; font-size: 12px; color: #666;">
         Click team names to edit • Click × to delete teams
       </p>
@@ -186,6 +196,6 @@
   
   <div id="lists"></div>
   
-  <script src="script.js"></script>
+  <script src="server.js"></script>
 </body>
 </html>

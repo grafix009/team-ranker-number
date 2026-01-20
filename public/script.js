@@ -123,11 +123,13 @@ socket.on("connect", () => {
 
 socket.on("initData", (data) => {
   console.log("Received initData:", data); // Debug log
+  teams = data; // Store globally for export
   renderLists(data);
 });
 
 socket.on("updateData", (data) => {
   console.log("Received updateData:", data); // Debug log
+  teams = data; // Store globally for export
   renderLists(data);
 });
 
@@ -150,8 +152,38 @@ function addTeam() {
   }
 }
 
+function exportData() {
+  // Convert teams data to CSV format
+  let csvContent = "Team,Rank,Item,Number\n";
+  
+  for (const [team, items] of Object.entries(teams)) {
+    items.forEach((item, idx) => {
+      // Escape any commas or quotes in the text
+      const escapedText = `"${item.text.replace(/"/g, '""')}"`;
+      csvContent += `"${team}",${idx + 1},${escapedText},${item.number}\n`;
+    });
+  }
+  
+  // Create a blob and download link
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement("a");
+  const url = URL.createObjectURL(blob);
+  
+  link.setAttribute("href", url);
+  link.setAttribute("download", `team_rankings_${new Date().toISOString().split('T')[0]}.csv`);
+  link.style.visibility = 'hidden';
+  
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+// Store teams data globally so export can access it
+let teams = {};
+
 // Attach event listeners
 document.getElementById("addTeamBtn").addEventListener("click", addTeam);
+document.getElementById("exportBtn").addEventListener("click", exportData);
 
 document.getElementById("importForm").onsubmit = async (e) => {
   e.preventDefault();
