@@ -2,6 +2,7 @@ const socket = io();
 const listsDiv = document.getElementById("lists");
 
 function renderLists(teams) {
+  console.log("Rendering teams:", teams); // Debug log
   listsDiv.innerHTML = "";
 
   for (const [team, items] of Object.entries(teams)) {
@@ -116,8 +117,19 @@ function renderLists(teams) {
   }
 }
 
-socket.on("initData", renderLists);
-socket.on("updateData", renderLists);
+socket.on("connect", () => {
+  console.log("Socket connected"); // Debug log
+});
+
+socket.on("initData", (data) => {
+  console.log("Received initData:", data); // Debug log
+  renderLists(data);
+});
+
+socket.on("updateData", (data) => {
+  console.log("Received updateData:", data); // Debug log
+  renderLists(data);
+});
 
 function addItem() {
   const text = document.getElementById("newItem").value.trim();
