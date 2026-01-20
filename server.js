@@ -45,6 +45,71 @@ io.on('connection', (socket) => {
     teams[team] = newOrder;
     io.emit('updateData', teams);
   });
+
+  // NEW: Add a new team
+  socket.on('addTeam', ({ name }) => {
+    if (!name || name.trim() === '') {
+      return; // Invalid team name
+    }
+    
+    const teamName = name.trim();
+    
+    // Check if team already exists
+    if (teams[teamName]) {
+      console.log(`Team "${teamName}" already exists`);
+      return;
+    }
+    
+    // Create new team with empty array
+    teams[teamName] = [];
+    io.emit('updateData', teams);
+    console.log(`Team "${teamName}" created`);
+  });
+
+  // NEW: Rename an existing team
+  socket.on('renameTeam', ({ oldName, newName }) => {
+    if (!oldName || !newName || newName.trim() === '') {
+      return; // Invalid names
+    }
+    
+    const trimmedNewName = newName.trim();
+    
+    // Check if old team exists
+    if (!teams[oldName]) {
+      console.log(`Team "${oldName}" does not exist`);
+      return;
+    }
+    
+    // Check if new name already exists
+    if (teams[trimmedNewName]) {
+      console.log(`Team "${trimmedNewName}" already exists`);
+      return;
+    }
+    
+    // Create new team with old team's data and delete old team
+    teams[trimmedNewName] = teams[oldName];
+    delete teams[oldName];
+    io.emit('updateData', teams);
+    console.log(`Team renamed from "${oldName}" to "${trimmedNewName}"`);
+  });
+
+  // NEW: Delete a team
+  socket.on('deleteTeam', ({ team }) => {
+    if (!team) {
+      return; // Invalid team name
+    }
+    
+    // Check if team exists
+    if (!teams[team]) {
+      console.log(`Team "${team}" does not exist`);
+      return;
+    }
+    
+    // Delete the team
+    delete teams[team];
+    io.emit('updateData', teams);
+    console.log(`Team "${team}" deleted`);
+  });
 });
 
 const PORT = process.env.PORT || 3000;

@@ -1,80 +1,191 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Team Ranker</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Team Ranking Manager</title>
   <script src="/socket.io/socket.io.js"></script>
   <style>
-    .input-row {
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    
+    .controls {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .control-section {
+      margin-bottom: 15px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .control-section:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+    
+    .control-section h3 {
+      margin-top: 0;
+      color: #555;
+      font-size: 16px;
+    }
+    
+    input[type="text"], input[type="number"], input[type="file"] {
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+      margin-right: 8px;
+    }
+    
+    button {
+      padding: 8px 16px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.2s;
+    }
+    
+    button:hover {
+      background-color: #45a049;
+    }
+    
+    .add-team-btn {
+      background-color: #2196F3;
+    }
+    
+    .add-team-btn:hover {
+      background-color: #0b7dda;
+    }
+    
+    #lists {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+    }
+    
+    .team-container {
+      background: white;
+      border-radius: 8px;
+      padding: 15px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .team-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #4CAF50;
+    }
+    
+    .team-header h3 {
+      margin: 0;
+      color: #333;
+      flex-grow: 1;
+    }
+    
+    .delete-team-btn {
+      background-color: #f44336;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      font-size: 20px;
+      line-height: 1;
+      cursor: pointer;
+      padding: 0;
       display: flex;
       align-items: center;
-      gap: 10px;
-      margin-bottom: 10px;
+      justify-content: center;
     }
-    #newItem {
-      width: 200px;
-      padding: 5px;
+    
+    .delete-team-btn:hover {
+      background-color: #da190b;
     }
-    #newNumber {
-      width: 60px;
-      padding: 5px;
-    }
-    .team-container {
-      display: inline-block;
-      vertical-align: top;
-      margin-right: 40px;
-    }
+    
     .ranking-list {
       list-style: none;
       padding: 0;
+      margin: 0;
     }
+    
     .rank-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 5px;
-      border: 1px solid #ddd;
-      margin-bottom: 4px;
-      border-radius: 4px;
-      cursor: grab;
-    }
-    .rank-item:hover {
+      padding: 10px;
+      margin: 5px 0;
       background: #f9f9f9;
+      border-radius: 4px;
+      cursor: move;
+      transition: background-color 0.2s;
+      display: flex;
+      gap: 8px;
     }
+    
+    .rank-item:hover {
+      background: #e8f5e9;
+    }
+    
     .rank-number {
       font-weight: bold;
-      color: #555;
-      width: 20px;
-      text-align: right;
+      color: #4CAF50;
+      min-width: 25px;
     }
   </style>
 </head>
 <body>
-  <h1>Team Ranker</h1>
-
-  <div class="input-row">
-    <input id="newItem" placeholder="New item..." />
-    <input id="newNumber" type="number" placeholder="#" step="any" />
-    <button onclick="addItem()">Add Item</button>
+  <h1>Team Ranking Manager</h1>
+  
+  <div class="controls">
+    <div class="control-section">
+      <h3>Add New Item (to all teams)</h3>
+      <input type="text" id="newItem" placeholder="Item name">
+      <input type="number" id="newNumber" placeholder="Number" step="0.01">
+      <button onclick="addItem()">Add Item</button>
+    </div>
+    
+    <div class="control-section">
+      <h3>Team Management</h3>
+      <button class="add-team-btn" onclick="addTeam()">➕ Add New Team</button>
+      <p style="margin: 8px 0 0 0; font-size: 12px; color: #666;">
+        Click team names to edit • Click × to delete teams
+      </p>
+    </div>
+    
+    <div class="control-section">
+      <h3>Import Data</h3>
+      <form id="importForm">
+        <input type="file" id="importFile" accept=".json">
+        <label>
+          <input type="checkbox" id="mergeCheckbox">
+          Merge with existing
+        </label>
+        <button type="submit">Import</button>
+      </form>
+    </div>
   </div>
-
+  
   <div id="lists"></div>
-
-  <hr>
-  <h3>Export</h3>
-  <a href="/export/json">JSON</a> |
-  <a href="/export/excel">Excel</a> |
-  <a href="/export/csv">CSV</a>
-
-  <h3>Import</h3>
-  <form id="importForm" enctype="multipart/form-data">
-    <input type="file" id="importFile" name="file" accept=".json,.csv,.xlsx" />
-    <label>
-      <input type="checkbox" id="mergeCheckbox" /> Merge instead of replace
-    </label>
-    <button type="submit">Import File</button>
-  </form>
-
-  <script src="script.js"></script>
+  
+  <script src="client.js"></script>
 </body>
 </html>

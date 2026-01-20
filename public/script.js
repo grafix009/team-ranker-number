@@ -7,7 +7,36 @@ function renderLists(teams) {
   for (const [team, items] of Object.entries(teams)) {
     const div = document.createElement("div");
     div.className = "team-container";
-    div.innerHTML = `<h3>${team}</h3>`;
+    
+    // Team header with edit and delete buttons
+    const header = document.createElement("div");
+    header.className = "team-header";
+    
+    const h3 = document.createElement("h3");
+    h3.textContent = team;
+    h3.onclick = () => {
+      const newName = prompt("Edit team name:", team);
+      if (newName !== null && newName.trim() !== "" && newName !== team) {
+        socket.emit("renameTeam", { oldName: team, newName: newName.trim() });
+      }
+    };
+    h3.style.cursor = "pointer";
+    h3.title = "Click to edit team name";
+    
+    const deleteBtn = document.createElement("button");
+    deleteBtn.textContent = "×";
+    deleteBtn.className = "delete-team-btn";
+    deleteBtn.onclick = () => {
+      if (confirm(`Delete team "${team}" and all its items?`)) {
+        socket.emit("deleteTeam", { team });
+      }
+    };
+    deleteBtn.title = "Delete team";
+    
+    header.appendChild(h3);
+    header.appendChild(deleteBtn);
+    div.appendChild(header);
+    
     const ul = document.createElement("ul");
     ul.className = "ranking-list";
 
@@ -15,6 +44,7 @@ function renderLists(teams) {
       const li = document.createElement("li");
       li.className = "rank-item";
       li.draggable = true;
+      li.dataset.index = idx; // Store index in data attribute
 
       const rankSpan = document.createElement("span");
       rankSpan.className = "rank-number";
@@ -45,14 +75,37 @@ function renderLists(teams) {
           socket.emit("deleteItem", { team, index: idx });
       };
 
-      li.ondragstart = (e) => e.dataTransfer.setData("index", idx);
-      ul.ondragover = (e) => e.preventDefault();
+      // FIX: Drag-and-drop bug fixed by using data attributes
+      li.ondragstart = (e) => {
+        e.dataTransfer.setData("text/plain", idx);
+        e.dataTransfer.effectAllowed = "move";
+      };
+      
+      ul.ondragover = (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "move";
+      };
+      
       ul.ondrop = (e) => {
-        const from = e.dataTransfer.getData("index");
-        const newOrder = [...items];
-        const moved = newOrder.splice(from, 1)[0];
-        newOrder.splice(idx, 0, moved);
-        socket.emit("reorder", { team, newOrder });
+        e.preventDefault();
+        const fromIndex = parseInt(e.dataTransfer.getData("text/plain"));
+        
+        // Find the drop target by traversing up to find the li element
+        let dropTarget = e.target;
+        while (dropTarget && dropTarget.tagName !== "LI") {
+          dropTarget = dropTarget.parentElement;
+        }
+        
+        if (!dropTarget || !dropTarget.dataset.index) return;
+        
+        const toIndex = parseInt(dropTarget.dataset.index);
+        
+        if (fromIndex !== toIndex) {
+          const newOrder = [...items];
+          const moved = newOrder.splice(fromIndex, 1)[0];
+          newOrder.splice(toIndex, 0, moved);
+          socket.emit("reorder", { team, newOrder });
+        }
       };
 
       ul.appendChild(li);
@@ -75,6 +128,13 @@ function addItem() {
   socket.emit("addItem", { text, number });
   document.getElementById("newItem").value = "";
   document.getElementById("newNumber").value = "";
+}
+
+function addTeam() {
+  const teamName = prompt("Enter new team name:");
+  if (teamName !== null && teamName.trim() !== "") {
+    socket.emit("addTeam", { name: teamName.trim() });
+  }
 }
 
 document.getElementById("importForm").onsubmit = async (e) => {
